@@ -26,7 +26,6 @@
 
                 <h2>Settings</h2>
                 <form action="javascript:void(0);">
-                    
                     <input id="useVirtual" type="checkbox">Use Virtual Cube<br>
                     <input id="hideTimer" type="checkbox">Hide timer<br>
                     <input id="showScramble" type="checkbox">Show Scramble<br>
@@ -35,31 +34,20 @@
                     <input id="prescramble" type="checkbox" checked="true">Scramble subsequent steps (requires real scrambles to be checked)<br>
                     <input id="goInOrder" type="checkbox">Go in order<br>
                     <input id="goToNextCase" type="checkbox">Don't show alg after stopping timer (press the left arrow key to view previous case)<br>
-
-                    <input id="mirrorAllAlgs" type="checkbox">Mirror across <span style="font-family: Consolas, monospace;">M</span> <input id="randomizeMMirror" type="checkbox">Randomize<br>
-                    <input id="mirrorAllAlgsAcrossS" type="checkbox">Mirror across <span style="font-family: Consolas, monospace;">S</span> <input id="randomizeSMirror" type="checkbox">Randomize<br>
-                    Line style <select id="lines">
-                        <option value="none"> None </option>
-                        <option selected value="thin-black"> Thin black </option>
-                        <option value="thick-black"> Thick black </option>
-                        <option value="thin-gray"> Thin gray </option>
-                        <option value="thick-gray"> Thick gray </option>
-                    </select> <br>
+                    <input id="mirrorAllAlgs" type="checkbox">Mirror all algs across the M slice<br>
                     Virtual cube size: <select id="cubeType">
                         <option value="3x3" default>3x3</option>
                         <option value="2x2">2x2</option>
                     </select><br><br>
                     <button id="connectGiiker">Connect Giiker Cube</button><br>
-                    
-                    This feature works with the Giiker Cube i3S and i3SE versions. Rubik's Connect, Gan i and GoCube smart cubes will not work with this site.<br><br>
-                    
                     When a giiker cube is connected, all moves made on the giiker will be reflected on the virtual cube. The giiker cube should be held with white on top and green in front. 
                     <br><br>
                     
-                    <input id="userDefined" type="checkbox">Use user defined algset <button id="addSelected">Add currently selected algs</button><br>
 
-                    <textarea id="userDefinedAlgs" cols=50 rows=50 style="display:none" onfocus="listener.stop_listening();" onblur="listener.listen();" placeholder="Place one alg per line. Lines starting with # will be ignored"></textarea>
-                    <br>
+                    <input id="userDefined" type="checkbox">Use user defined algset<br>
+                    <textarea id="userDefinedAlgs" cols=50 rows=50 style="display:none" onfocus="listener.stop_listening();" onblur="listener.listen();" placeholder="Place one alg per line"></textarea>
+                    <br><br>
+
 
                     Preorientation: <br>
 
@@ -77,9 +65,7 @@
                     and finally do a random number of 
                     <input type="text" id="colourneutrality3" value="" onfocus="listener.stop_listening();" onblur="listener.listen();" size="1"> 
                     rotations.<br>
-                    <br>
-                    <a href="scramblingNote.html">Note on preorientation settings</a> 
-                    <br><br>
+                    <br><br><br>
 
 
                     <input id="useCustomColourScheme" type="checkbox"><label for="useCustomColourScheme"> Use custom colour scheme:</label><br>
@@ -153,8 +139,7 @@
 
 
             <div class=column_right>
-                <img src="https://www.cubing.net/api/visualcube/?fmt=svg&size=300&view=plan&bg=black&alg=x2" id="visualcube" title="Click to switch between flat and 3D view"/>
-                <p style="font-size: small;">Click the above cube to switch between flat and 3D view</p>
+                <img src="https://www.cubing.net/api/visualcube/?fmt=svg&size=300&view=plan&bg=black&alg=x2" id="visualcube"/>
 
                 <div style="overflow-y: scroll; height:150px;">
                     <p id="timeList" style="text-align: left">&nbsp</p>
@@ -178,21 +163,16 @@
                     Space: Stop timer, show algorithm and reset case.<br>
                     Timer will automatically stop if the cube is solved.<br>
                     Esc: Reset case without showing algorithm.<br> 
-                    <h4> View/Edit Keyboard Controls <a href="controls.html">here</a>. </h4>
-                    
+                    Keyboard Controls: See <a href="controls.html">here</a>.
+                    <br><br>
 
                     <a href="https://discord.gg/K7tpCJs">Join my Discord server!</a>
                     <br><br>
 
                     Please report bugs by filing an issue <a href="https://github.com/tao-yu/Alg-Trainer/issues">here</a>, or by messaging me on discord, Speedsolving.com or Reddit. 
-                    
-                    <br><br>
-                    This project is open source! Feel free to view and modify the source code at <a href="https://github.com/tao-yu/Alg-Trainer">the Github repository</a> subject to the MIT licence. Pull requests are welcomed, though it may be wise to message me about any changes you wish to make before sending such requests. 
 
                     <br><br>
-                    <a href="1LLL.html">Full 1LLL trainer</a> 
-
-                     
+                    Note: Some adblockers (ublock origin, for example) may cause this site to stop working. If you are experiencing problems, try whitelisting this site on your adblocker. I will look into why this is happening. 
                 </div>
 
 
@@ -201,15 +181,14 @@
 
 
         </div>
-
-        <script src="js/giiker.js"></script>
+        
+        <script src="js/giiker.js"></script>       
         <script src="js/cube.js"></script>
         <script src="js/solve.js"></script>
         <script src="js/alg_jison.js"></script>
         <script src="js/alg.js"></script>
         <script src="js/controls.js"></script>
         <script src="js/oneLookLastLayer.js"></script>
-        <script src="js/keymaps.js"></script>
         <script src="js/RubiksCube.js"></script>
     </body>
 </html>
