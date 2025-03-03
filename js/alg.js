@@ -797,3 +797,16 @@ THE SOFTWARE.
 });
 
 // var c = alg.cube;
+
+function getNextMove(algorithm) {
+    // Implement logic to get the next move from the algorithm
+    return algorithm.split(" ")[0];
+}
+
+function getPlan(algorithm) {
+    // Implement logic to get the plan for the algorithm
+    return "Solve the cross";
+}
+
+// Export functions if using modules
+export { getNextMove, getPlan };
