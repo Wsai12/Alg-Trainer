@@ -9,6 +9,8 @@ var stickerSize = canvas.width/5;
 var currentAlgIndex = 0;
 var algorithmHistory = [];
 var shouldRecalculateStatistics = true;
+var hint = "";
+var rawAlgs = [];
 
 createAlgsetPicker();
 /*
@@ -1124,7 +1126,7 @@ function generateAlgTest(){
         shouldRecalculateStatistics = false;
     }
     var rawAlgStr = randomFromList(algList);
-    var rawAlgs = rawAlgStr.split("/");
+    rawAlgs = rawAlgStr.split("/");
     rawAlgs = fixAlgorithms(rawAlgs);
 
     //Do non-randomized mirroring first. This allows a user to practise left slots, back slots, front slots, rights slots
@@ -1240,12 +1242,16 @@ function reTestAlg(){
 
 }
 
-function updateTrainer(scramble, solutions, algorithm, timer){
+function updateTrainer(scramble, solutions, hint, algorithm, timer){
     if (scramble!=null){
         document.getElementById("scramble").innerHTML = scramble;
     }
     if (solutions!=null){
         document.getElementById("algdisp").innerHTML = solutions;
+    }
+
+    if (hint!=null){
+        document.getElementById("hintdisp").innerHTML = hint;
     }
 
     if (algorithm!=null){
@@ -1348,7 +1354,7 @@ function displayAlgorithm(algTest, reTest=true){
         reTestAlg();
     }
 
-    updateTrainer(algTest.scramble, algTest.solutions.join("<br><br>"), null, null);
+    updateTrainer(algTest.scramble, algTest.solutions.join("<br><br>"), null, null, null);
 
     scramble.style.color = '#e6e6e6';
 }
@@ -1367,7 +1373,7 @@ function displayAlgorithmFromHistory(index){
     }
 
     //updateTrainer("<span style=\"color: #90f182\">" + algTest.orientRandPart + "</span>" + " "+ algTest.scramble, algTest.solutions.join("<br><br>"), algTest.preorientation+algTest.scramble, timerText);
-    updateTrainer(algTest.getHtmlFormattedScramble(), algTest.solutions.join("<br><br>"), algTest.preorientation+algTest.scramble, timerText);
+    updateTrainer(algTest.getHtmlFormattedScramble(), algTest.solutions.join("<br><br>"), null, algTest.preorientation+algTest.scramble, timerText);
 
     scramble.style.color = '#e6e6e6';
 }
@@ -1384,9 +1390,40 @@ function displayAlgorithmForPreviousTest(reTest=true){//not a great name
     }
 
     //updateTrainer("<span style=\"color: #90f182\">" + lastTest.orientRandPart + "</span>" + " "+ lastTest.scramble, lastTest.solutions.join("<br><br>"), null, null);
-    updateTrainer(lastTest.getHtmlFormattedScramble(), lastTest.solutions.join("<br><br>"), null, null);
+    updateTrainer(lastTest.getHtmlFormattedScramble(), lastTest.solutions.join("<br><br>"), null, null, null);
 
     scramble.style.color = '#e6e6e6';
+}
+
+function showHint() {
+    var lastTest = algorithmHistory[algorithmHistory.length - 1];
+    if (!lastTest) {
+        return;
+    }
+    var nextMove = getNextMove(rawAlgs[0]);
+    if (hint == "") {
+        hint = nextMove; // Initialize hint with the first move
+    } else {
+        hint += " " + nextMove; // Append the next move to the existing hint
+    }
+    updateTrainer(lastTest.getHtmlFormattedScramble(), null, hint, null, null);
+}
+
+function getNextMove(algorithm) {
+    // Implement logic to get the next move of the algorithm
+    var moves = algorithm.split(" ");
+    if (algorithm[0] == "U" || algorithm[0] == "U'") {
+        if (hint == "") {
+            return moves[1] || ""; // Return the first move if hint is empty
+        }
+        var hintMoves = hint.split(" ");
+        return moves[hintMoves.length+1] || ""; // Return the next move based on the current hint length
+    }
+    if (hint == "") {
+        return moves[0] || ""; // Return the first move if hint is empty
+    }
+    var hintMoves = hint.split(" ");
+    return moves[hintMoves.length] || ""; // Return the next move based on the current hint length
 }
 
 function randomFromList(set){
@@ -1781,20 +1818,21 @@ function updateControls() {
 setInterval(updateControls, 300);
 
 
-function nextScramble(displayReady=true){
+function nextScramble(displayReady = true) {
     document.getElementById("scramble").style.color = "white";
     stopTimer(false);
-    if (displayReady){
+    if (displayReady) {
         document.getElementById("timer").innerHTML = 'Ready';
-    };
-    if (isUsingVirtualCube() ){
+    }
+    if (isUsingVirtualCube()) {
         testAlg(generateAlgTest());
         startTimer();
-    }
-    else {
+    } else {
         testAlg(generateAlgTest());
     }
     historyIndex = algorithmHistory.length - 1;
+    hint = ""; // Reset the hint variable
+    document.getElementById("hintdisp").innerHTML = ""; // Clear the hint display
 }
 
 var historyIndex;
@@ -2106,7 +2144,7 @@ function RubiksCube() {
                           cubestate[31],cubestate[31],cubestate[31],cubestate[31],cubestate[31],cubestate[31],cubestate[31],cubestate[31],cubestate[31],
                           cubestate[40],cubestate[40],cubestate[40],cubestate[40],cubestate[40],cubestate[40],cubestate[40],cubestate[40],cubestate[40],
                           cubestate[49],cubestate[49],cubestate[49],cubestate[49],cubestate[49],cubestate[49],cubestate[49],cubestate[49],cubestate[49]];
-    }
+    }  
 
     this.doU = function(times) {
         var i;
