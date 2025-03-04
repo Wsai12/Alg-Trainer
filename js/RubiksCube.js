@@ -1766,6 +1766,14 @@ function updateControls() {
         document.getElementById("scramble").innerHTML = "&nbsp;";
         document.getElementById("algdisp").innerHTML = "";
     });
+    listener.register(new KeyCombo("Enter"), function() {
+        nextScramble();
+        doNothingNextTimeSpaceIsPressed = false;
+    });
+    listener.register(new KeyCombo("Tab"), function() {
+        nextScramble();
+        doNothingNextTimeSpaceIsPressed = false;
+    });
     listener.register(new KeyCombo("ArrowLeft"), handleLeftButton);
     listener.register(new KeyCombo("ArrowRight"), handleRightButton);
 }
