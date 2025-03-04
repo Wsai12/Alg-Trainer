@@ -1,18 +1,19 @@
+// filepath: Alg-Trainer/js/hintSystem.js
 document.getElementById('hintButton').addEventListener('click', showHint);
 
 function showHint() {
     const algorithm = "U R U' R'"; // Example algorithm, replace with actual algorithm
     const nextMove = getNextMove(algorithm);
     const plan = getPlan(algorithm);
-    document.getElementById('hintdisp').innerText = `Next Move: ${nextMove}\nPlan: ${plan}`;
+    alert(`Next Move: ${nextMove}\nPlan: ${plan}`);
 }
 
-function getNextMove(algorithm) {
+function getNextMove() {
     // Implement logic to get the next move of the algorithm
-    return algorithm.split(" ")[0];
+    return "U";
 }
 
-function getPlan(algorithm) {
+function getPlan() {
     // Implement logic to get the plan for the algorithm
     return "Solve the cross";
 }
