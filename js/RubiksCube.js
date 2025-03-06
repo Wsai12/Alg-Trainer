@@ -11,6 +11,7 @@ var algorithmHistory = [];
 var shouldRecalculateStatistics = true;
 var hint = "";
 var rawAlgs = [];
+var historyIndex = 0;
 
 createAlgsetPicker();
 /*
@@ -632,17 +633,6 @@ function obfuscate(algorithm, numPremoves=3, minLength=16, numPostmoves=0){
     Let sol(alg)~alg' be a function which returns the solution to a cube scrambled by alg
     and ob(alg)~alg to be a function which returns a series of moves that has the same effect as alg
 
-    sol and ob are evaluated by using a cube solver - so we want to avoid evaluating them more than necessary. Evaluating alg' is 
-    cheap, despite the fact that alg' ~ sol(alg)
-
-    This function first generates a series of premoves and a random series of postmoves, which are both free from rotations.
-
-    The goal of this function is to generate an algorithm obAlg such that
-
-    obAlg ~ alg
-    and 
-    obAlg = premoves + moves + postmoves
-
     cube.js provides us with a sol function. However it only works for algorithms that return the cube to their original 
     orientation. Let orient(alg) be be such that alg + orient(alg), is an alg which ends in its original orientation, and 
     orient(alg) consists of only rotations
@@ -1174,13 +1164,12 @@ function generateAlgTest(){
     var algTest = new AlgTest(rawAlgs, scramble, solutions, preorientation, solveTime, time, set, visualCubeView, cubeType, orientRandPart);
     return algTest;
 }
-function testAlg(algTest, addToHistory=true){
-
+function testAlg(algTest, addToHistory=true) {
     var scramble = document.getElementById("scramble");
 
-    if (document.getElementById("showScramble").checked){
-        scramble.innerHTML = algTest.getHtmlFormattedScramble()//"<span style=\"color: #90f182\">" + algTest.orientRandPart + "</span>" + " " + algTest.scramble;
-    } else{
+    if (document.getElementById("showScramble").checked) {
+        scramble.innerHTML = algTest.getHtmlFormattedScramble();
+    } else {
         scramble.innerHTML = "&nbsp;";
     }
 
@@ -1189,15 +1178,114 @@ function testAlg(algTest, addToHistory=true){
     cube.resetCube();
     doAlg(algTest.preorientation);
     doAlg(algTest.scramble);
-    drawCube(cube.cubestate)
+    drawCube(cube.cubestate);
 
     updateVisualCube(algTest.preorientation + algTest.scramble);
 
-    if (addToHistory){
+    if (addToHistory) {
         algorithmHistory.push(algTest);
     }
     console.log(algTest);
+}
 
+// Adds extra rotations to the end of an alg to reorient
+function correctRotation(alg) {
+    var rc = new RubiksCube();
+    rc.doAlgorithm(alg);
+    var ori = rc.wcaOrient();
+	
+    return alg + " " + ori;
+}
+
+function generateAlgTest(){
+
+    var set = document.getElementById("algsetpicker").value;
+    var obfuscateAlg = document.getElementById("realScrambles").checked;
+    var shouldPrescramble = document.getElementById("prescramble").checked;
+    var randAUF = document.getElementById("randAUF").checked;
+
+    let neverAUF = ["Domino Reduction"];
+
+    if (neverAUF.includes(set)){
+        randAUF = false;
+    }
+
+    var algList = createAlgList()
+    if (shouldRecalculateStatistics){
+        updateAlgsetStatistics(algList);
+        shouldRecalculateStatistics = false;
+    }
+    var rawAlgStr = randomFromList(algList);
+    rawAlgs = rawAlgStr.split("/");
+    rawAlgs = fixAlgorithms(rawAlgs);
+
+    //Do non-randomized mirroring first. This allows a user to practise left slots, back slots, front slots, rights slots
+    // etc for F2L like algsets
+    if (mirrorAllAlgs.checked && !randomizeMMirror.checked) {
+        rawAlgs = mirrorAlgsAcrossAxis(rawAlgs, axis="M");
+    }
+    if (mirrorAllAlgsAcrossS.checked && !randomizeSMirror.checked) {
+        rawAlgs = mirrorAlgsAcrossAxis(rawAlgs, axis="S");
+    }
+    if (mirrorAllAlgs.checked && randomizeMMirror.checked) {
+        if (Math.random() > 0.5){
+            rawAlgs = mirrorAlgsAcrossAxis(rawAlgs, axis="M");
+        }
+    }
+    if (mirrorAllAlgsAcrossS.checked && randomizeSMirror.checked) {
+        if (Math.random() > 0.5){
+            rawAlgs = mirrorAlgsAcrossAxis(rawAlgs, axis="S");
+        }
+    }
+
+
+    var solutions;
+    if (randAUF){
+        solutions = addAUFs(rawAlgs);
+    } else {
+        solutions = rawAlgs;
+    }
+
+
+
+    var scramble = generateAlgScramble(localStorage.getItem("autoCorrectRotation")=="true"?correctRotation(solutions[0]):solutions[0],set,obfuscateAlg,shouldPrescramble);
+    if (set == "F3L"){
+        solutions = [alg.cube.invert(scramble).replace(/2'/g, "2")];
+    }
+    var [preorientation, orientRandPart] = generateOrientation();
+    orientRandPart = alg.cube.simplify(orientRandPart);
+
+    var cubeType = document.getElementById("cubeType");
+
+    var solveTime = null;
+    var time = Date.now();
+    var visualCubeView = "plan";
+
+    var algTest = new AlgTest(rawAlgs, scramble, solutions, preorientation, solveTime, time, set, visualCubeView, cubeType, orientRandPart);
+    return algTest;
+}
+function testAlg(algTest, addToHistory=true) {
+    var scramble = document.getElementById("scramble");
+
+    if (document.getElementById("showScramble").checked) {
+        scramble.innerHTML = algTest.getHtmlFormattedScramble();
+    } else {
+        scramble.innerHTML = "&nbsp;";
+    }
+
+    document.getElementById("algdisp").innerHTML = "";
+
+    cube.resetCube();
+    doAlg(algTest.preorientation);
+    doAlg(algTest.scramble);
+    drawCube(cube.cubestate);
+
+    updateVisualCube(algTest.preorientation + algTest.scramble);
+
+    if (addToHistory) {
+        algorithmHistory.push(algTest);
+    }
+    console.log(algTest);
 }
 
 function updateAlgsetStatistics(algList){
@@ -1359,23 +1447,18 @@ function displayAlgorithm(algTest, reTest=true){
     scramble.style.color = '#e6e6e6';
 }
 
-function displayAlgorithmFromHistory(index){    
-
+function displayAlgorithmFromHistory(index, resetTimer = true) {
     var algTest = algorithmHistory[index];
-
-    console.log( algTest );
-
-    var timerText;
-    if (algTest.solveTime == null){
-        timerText = 'n/a'
-    } else {
-        timerText = algTest.solveTime.toString()
+    if (index == algorithmHistory.length - 1) {
+        // If the last test is selected, don't reset the timer
+        resetTimer = false;
     }
-
-    //updateTrainer("<span style=\"color: #90f182\">" + algTest.orientRandPart + "</span>" + " "+ algTest.scramble, algTest.solutions.join("<br><br>"), algTest.preorientation+algTest.scramble, timerText);
-    updateTrainer(algTest.getHtmlFormattedScramble(), algTest.solutions.join("<br><br>"), null, algTest.preorientation+algTest.scramble, timerText);
-
+    var timerText = resetTimer ? 'n/a' : (algTest.solveTime == null ? 'Ready' : algTest.solveTime.toString());
+    updateTrainer(algTest.getHtmlFormattedScramble(), null, null, algTest.preorientation + algTest.scramble, timerText);
     scramble.style.color = '#e6e6e6';
+    cube.resetCube();
+    doAlg(algTest.scramble);
+    drawCube(cube.cubestate);
 }
 
 function displayAlgorithmForPreviousTest(reTest=true){//not a great name
@@ -1403,10 +1486,36 @@ function showHint() {
     var nextMove = getNextMove(rawAlgs[0]);
     if (hint == "") {
         hint = nextMove; // Initialize hint with the first move
+        // Show the hint cube with the reversed algorithm
+        var reversedAlgorithm = reverseAlgorithm(rawAlgs[0]);
+        if (rawAlgs[0].startsWith("U")) {
+            if (rawAlgs[0][1] == "'" || rawAlgs[0][1] == "2") {
+                reversedAlgorithm = reversedAlgorithm + " U"+rawAlgs[0][1];
+            }
+            else {
+                reversedAlgorithm = reversedAlgorithm + " U";
+            }
+        }
+        var hintCubeUrl = `https://visualcube.api.cubing.net/?fmt=svg&size=300&view=plan&bg=black&alg=y2${reversedAlgorithm}`;
+        document.getElementById("hintcube").src = hintCubeUrl;
     } else {
         hint += " " + nextMove; // Append the next move to the existing hint
     }
     updateTrainer(lastTest.getHtmlFormattedScramble(), null, hint, null, null);
+}
+
+function retractHint() {
+    var lastTest = algorithmHistory[algorithmHistory.length - 1];
+    if (!lastTest || hint == "") {
+        return;
+    }
+    var hintMoves = hint.split(" ");
+    hintMoves.pop(); // Remove the last move
+    hint = hintMoves.join(" ");
+    updateTrainer(lastTest.getHtmlFormattedScramble(), null, hint, null, null);
+    if (hint == "") {
+        document.getElementById("hintcube").src = "https://visualcube.api.cubing.net/?fmt=svg&size=300&view=plan&bg=black&alg=y2";
+    }
 }
 
 function getNextMove(algorithm) {
@@ -1424,6 +1533,30 @@ function getNextMove(algorithm) {
     }
     var hintMoves = hint.split(" ");
     return moves[hintMoves.length] || ""; // Return the next move based on the current hint length
+}
+
+function reverseAlgorithm(algorithm) {
+    // Split the algorithm into individual moves
+    var moves = algorithm.split(" ");
+    // Reverse the order of the moves
+    moves.reverse();
+    // Invert each move
+    var reversedMoves = moves.map(invertMove);
+    // Join the reversed moves into a single string
+    return reversedMoves.join(" ");
+}
+
+function invertMove(move) {
+    // If the move is a double turn (e.g., "U2"), it remains the same
+    if (move.includes("2")) {
+        return move;
+    }
+    // If the move is a clockwise turn (e.g., "U"), it becomes a counterclockwise turn (e.g., "U'")
+    if (move.includes("'")) {
+        return move.replace("'", "");
+    }
+    // If the move is a counterclockwise turn (e.g., "U'"), it becomes a clockwise turn (e.g., "U")
+    return move + "'";
 }
 
 function randomFromList(set){
@@ -1747,12 +1880,12 @@ lastKeyMap = null;
 
 
 function handleLeftButton() {
-    if (algorithmHistory.length<=1 || timerIsRunning){
+    if (algorithmHistory.length <= 1 || timerIsRunning) {
         return;
     }
     historyIndex--;
 
-    if (historyIndex<0){
+    if (historyIndex < 0) {
         alert('Reached end of solve log');
         historyIndex = 0;
     }
@@ -1760,11 +1893,11 @@ function handleLeftButton() {
 }
 
 function handleRightButton() {
-    if (timerIsRunning){
+    if (timerIsRunning) {
         return;
     }
     historyIndex++;
-    if (historyIndex>=algorithmHistory.length){
+    if (historyIndex >= algorithmHistory.length) {
         nextScramble();
         doNothingNextTimeSpaceIsPressed = false;
         return;
@@ -1803,16 +1936,15 @@ function updateControls() {
         document.getElementById("scramble").innerHTML = "&nbsp;";
         document.getElementById("algdisp").innerHTML = "";
     });
-    listener.register(new KeyCombo("Enter"), function() {
-        nextScramble();
-        doNothingNextTimeSpaceIsPressed = false;
-    });
+    listener.register(new KeyCombo("Enter"), function() { displayAlgorithmForPreviousTest();});
     listener.register(new KeyCombo("Tab"), function() {
         nextScramble();
         doNothingNextTimeSpaceIsPressed = false;
     });
-    listener.register(new KeyCombo("ArrowLeft"), handleLeftButton);
-    listener.register(new KeyCombo("ArrowRight"), handleRightButton);
+    listener.register(new KeyCombo("ArrowLeft"), function() { retractHint(); });
+    listener.register(new KeyCombo("ArrowRight"), function() { showHint(); });
+    listener.register(new KeyCombo("ArrowUp"), function() { handleLeftButton(); });
+    listener.register(new KeyCombo("ArrowDown"), function() { handleRightButton(); });
 }
 
 setInterval(updateControls, 300);
@@ -1833,6 +1965,7 @@ function nextScramble(displayReady = true) {
     historyIndex = algorithmHistory.length - 1;
     hint = ""; // Reset the hint variable
     document.getElementById("hintdisp").innerHTML = ""; // Clear the hint display
+    document.getElementById("hintcube").src = "https://visualcube.api.cubing.net/?fmt=svg&size=300&view=plan&bg=black&alg=y2"; // Reset the hint cube
 }
 
 var historyIndex;

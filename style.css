@@ -4,6 +4,31 @@ body {
     color: white;
 }
 
+.scramble-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.scramble-container button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#prevScramble {
+    left: 0;
+}
+
+#nextScramble {
+    right: 0;
+}
+
+.scramble {
+    margin: 0 50px;
+}
+
 p {
     font-family: Arial;
     font-size: 20px;
