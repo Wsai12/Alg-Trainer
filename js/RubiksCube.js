@@ -1499,7 +1499,16 @@ function showHint() {
         var hintCubeUrl = `https://visualcube.api.cubing.net/?fmt=svg&size=300&view=plan&bg=black&alg=y2${reversedAlgorithm}`;
         document.getElementById("hintcube").src = hintCubeUrl;
     } else {
-        hint += " " + nextMove; // Append the next move to the existing hint
+        var hintMoves = hint.split(" ");
+        if (hintMoves.length < rawAlgs[0].split(" ").length && rawAlgs[0].split(" ")[0]!="U" && rawAlgs[0].split(" ")[0]!="U'" && rawAlgs[0].split(" ")[0]!="U2" && rawAlgs[0].split(" ")[-1]!="U" && rawAlgs[0].split(" ")[-1]!="U'" && rawAlgs[0].split(" ")[-1]!="U2") {
+            hint += " " + nextMove;
+        }
+        else if (hintMoves.length < rawAlgs[0].split(" ").length-1 && !(rawAlgs[0].split(" ")[0].startsWith("U") && rawAlgs[0].split(" ")[rawAlgs[0].split(" ").length-1].startsWith("U"))) {
+                    hint += " " + nextMove;
+        }
+        else if (hintMoves.length < rawAlgs[0].split(" ").length-2) {
+            hint += " " + nextMove;
+        }
     }
     updateTrainer(lastTest.getHtmlFormattedScramble(), null, hint, null, null);
 }
